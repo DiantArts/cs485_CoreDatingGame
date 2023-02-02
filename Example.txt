@@ -1,0 +1,38 @@
+\<question:name>What is your name?
+    Nice to meet you \<name>, are you new here?
+    yes
+        Wonderful! me too!
+        Do you want to go over there?
+            yeah no lmao \<name> you looser
+        I have no idea how to build a story, HELP
+    no
+        Text2
+        Answer2.1
+            Text2.1
+            Text2.1
+            Answer2.1.1
+            Answer2.1.2
+            Answer2.1.3
+        Answer2.2
+        Answer2.3
+            Text2.3
+            Answer2.3.1
+            Answer2.3.2
+            Answer2.3.3
+    shut up
+        Text3
+        Answer3.1
+            Text3.1
+            Answer3.1.1
+            Answer3.1.2
+            Answer3.1.3
+        Answer3.2
+            Text3.2
+            Answer3.2.1
+            Answer3.2.2
+            Answer3.2.3
+        Answer3.3
+            Text3.3
+            Answer3.3.1
+            Answer3.3.2
+            Answer3.3.3
