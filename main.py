@@ -1,6 +1,8 @@
 from typing import Type, TypeVar
 import sys
 
+# ENABLE_DEBUG = True
+ENABLE_DEBUG = False
 TAB_SIZE = 4
 
 
@@ -9,6 +11,8 @@ TAB_SIZE = 4
 
 # Tree containing every story alternative
 class TreeNode:
+
+    # constructor
     def __init__(
         self, #: TreeNode
         string: str
@@ -23,19 +27,41 @@ class TreeNode:
         answer: str,
         child #: TreeNode
     ):
-        if not isinstance(child, TreeNode): # only accept TreeNode type
+        if not isinstance(child, TreeNode) and child is not None: # only accept TreeNode type
             raise ValueError("'child' object cannot be interpreted as a TreeNodes")
         self.answers.append(answer)
         self.children.append(child)
 
+    # print the tree
     def display(
         self, #: TreeNode
         depth: int = 0
     ):
-        print(' ' * depth * 4 + self.text)
+        print(self.asStr())
+
+    # convert to string
+    def __repr__(
+        self
+    ):
+        return self.asStr()
+
+    # convert to string
+    def asStr(
+        self, #: TreeNode
+        depth: int = 0
+    ):
+        ret = (' ' * (depth * 4)) + self.text + '\n'
         for (answer, child) in zip(self.answers, self.children):
-            print(' ' * depth * 4 + answer)
-            child.display(depth + 1)
+            ret += (' ' * (depth * 4)) + answer + '\n'
+            if child is not None:
+                ret += child.asStr(depth + 1)
+        return ret
+
+def printDebug(
+    string: str
+):
+    if ENABLE_DEBUG:
+        print(string)
 
 
 
@@ -50,45 +76,51 @@ def getDepth(
 # extract the answers from the current depth
 def extractAnswers(
     string: str,
-    depth: int
-) -> ([str], [TreeNode], str):
+    depth: int,
+    parent: TreeNode
+) -> str:
     answers = []
     children = []
 
-    print("\t\t\t------ searching (depth " + str(depth) + ")")
-    print(string)
+    printDebug("\t\t\t------ searching <depth:" + str(depth) + ">")
+    printDebug(string)
+
+    if getDepth(string) < depth:
+        return string
 
     # extract current line from string into a child
     eolPos = string.find('\n')
     if eolPos < 0:
         # have text but no answer
-        print("\t\t\tanswer done")
-        return answers, children, string
-    answers.append(string[:eolPos]) # contains the answer
-    # tree = TreeNode(currentLine)
+        printDebug("\t\t\tanswer done")
+        return string
+    # answers.append(string[:eolPos]) # push the answer to the list of answers (tmp)
+    answer = string[:eolPos].lstrip(' ') # push the answer to the list of answers (tmp)
     string = string[eolPos + 1:]
-    print("\t\t\t---------------------> '" + string[:eolPos] + "' (depth " + str(depth) + ")")
+    printDebug("\t\t\t---------------------> '" + string[:eolPos] + "' <depth:" + str(depth) + ">")
 
     # recursively get children of current answer
-    print("\t\t\twhile " + str(getDepth(string)) + " > " + str(depth))
-    while getDepth(string) > depth:
-        print("\t\t\twhile " + str(getDepth(string)) + " > " + str(depth))
+    printDebug("\t\t\twhile " + str(getDepth(string)) + " > " + str(depth))
+    if getDepth(string) > depth:
+        while getDepth(string) > depth:
+            printDebug("\t\t\twhile " + str(getDepth(string)) + " > " + str(depth))
 
-        child, string = generateTree(string, depth + 1)
-        print(string)
+            child, string = generateTree(string, depth + 1)
+            printDebug(string)
 
-        if child is not None:
-            children.append(child)
+            if child is not None:
+                parent.append(answer, child)
+    else:
+        parent.append(answer, None)
 
-    print("\t\t\tif can continue searching")
+    # check if should continue searching
+    printDebug("\t\t\tif can continue searching")
     if getDepth(string) == depth:
-        retAnswers, retChildren, string = extractAnswers(string, depth)
-        for answer in retAnswers:
-            answers.append(answer)
-        for child in retChildren:
-            children.append(child)
-    print("\t\t\tsearch done (depth " + str(depth) + ")")
-    return answers, children, string
+        string = extractAnswers(string, depth, parent)
+
+    # search is done at this depth, returning
+    printDebug("\t\t\tsearch done <depth:" + str(depth) + ">")
+    return string
 
 # geneate the tree from a string (probably a file like CoreGameStory.txt)
 # recurssively called by extractAnswers()
@@ -97,28 +129,23 @@ def generateTree(
     depth: int = 0
 ) -> (TreeNode, str):
 
-    print("\t\t\t===== diving (depth " + str(depth) + ")")
-    print(string)
+    printDebug("\t\t\t===== diving <depth:" + str(depth) + ">")
+    printDebug(string)
 
     # extract current line from string into the tree text
     eolPos = string.find('\n')
     if eolPos < 0:
         # no answers anymore, the game over if node reached
         return None, string
-    currentLine = string[:eolPos]
-    tree = TreeNode(currentLine)
-    print("\t\t\t=====================> '" + currentLine + "' (depth " + str(depth) + ")")
+    tree = TreeNode(string[:eolPos].lstrip(' '))
+    printDebug("\t\t\t=====================> '" + string[:eolPos].lstrip(' ') + "' <depth:" + str(depth) + ">")
     string = string[eolPos + 1:]
 
     # finding answers and recursively diving to generate subtrees
-    answers, children, string = extractAnswers(string, depth)
-    print(answers)
-    print(children)
-    for answer, child in zip(answers, children):
-        if answer is not None and child is not None:
-            tree.append(answer, child)
+    string = extractAnswers(string, depth, tree)
 
-    print("\t\t\tdive done")
+    # node is complete, returning
+    printDebug("\t\t\tdive done")
     return tree, string
 
 
@@ -127,9 +154,9 @@ def generateTree(
 
 def main(
 ) -> int:
-    # string = open("CoreGameStory.txt").read()
-    string = open("SimpleExampleFile.txt").read()
-    print(string)
+    string = open("CoreGameStory.txt").read()
+    # string = open("SimpleExampleFile.txt").read()
+    printDebug(string)
     tree, _ = generateTree(string)
     if tree is None:
         raise ValueError("Invalid tree generation")
