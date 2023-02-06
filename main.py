@@ -34,6 +34,7 @@ class TreeNode:
         self.answers.append(answer)
         self.children.append(child)
 
+    # tree if contains no answer
     def isEmpty(
         self, #TreeNode
     ) -> bool:
@@ -67,6 +68,7 @@ class TreeNode:
                     ret += child.asStr(depth + 1)
         return ret
 
+# print if ENAbLE_DEBUG is true
 def printDebug(
     string: str,
 ):
@@ -152,10 +154,13 @@ def generateTree(
     printDebug("\t\t\t=====================> '" + string[:eolPos].lstrip(' ') + "' <depth:" + str(depth) + ">")
     string = string[eolPos + 1:]
 
-    if tree.text.startswith("\\<question"):
+    if tree.text.startswith("\\<question:"):
         tree.isQuestion = True
         child, _ = generateTree(string, depth + 1)
         tree.children.append(child)
+    elif tree.text.startswith("\\<load:"):
+        filepath = tree.text.split(':')[1].split('>')[0] # extract filepath
+        tree = loadFileGenerateTree(filepath)
     else:
         # finding answers and recursively diving to generate subtrees
         string = extractAnswers(string, depth, tree)
@@ -164,15 +169,25 @@ def generateTree(
     printDebug("\t\t\tdive done")
     return tree, string
 
+def loadFileGenerateTree(
+    string: str
+) -> TreeNode:
+    string = open(string).read()
+    printDebug(string)
+    tree, _ = generateTree(string)
+    return tree
+
 
 
 # =================================================== game tools
 
+# Twillio -> py
 def receiveTwillioInput(
 ) -> str:
     # TODO: reiceve with twillio here
     return input("\n<Input>: ")
 
+# py -> Twillio
 def sendTwillioOutput(
     phoneNumber: str,
     text: str,
@@ -193,6 +208,7 @@ def parseInput(
 
 # =================================================== Game definition
 
+# Instanciated for every new phone number texts
 class GameInstance:
     def __init__(
         self, #: GameInstance
@@ -202,6 +218,7 @@ class GameInstance:
         self.instances = {}
         self.name = "<UnknownName>"
 
+# Handle every phone numbers (db pretty much)
 class Game:
 
     def __init__(
@@ -266,21 +283,22 @@ class Game:
 
 # =================================================== main
 
+# tmp test main
 def main(
 ) -> int:
-    string = open("Example.txt").read()
-    printDebug(string)
-    tree, _ = generateTree(string)
+
+    # load tree for the game
+    tree = loadFileGenerateTree("Example.txt")
+    # tree = loadFileGenerateTree("SimpleExampleFile.txt")
+    print(tree)
     if tree is None:
         raise ValueError("Invalid tree generation")
-    # tree.display()
-    # return 0
-
-    phoneNumber = "0123456789"
-
+    return 0
     game = Game(tree)
-    game.lauchInstance(phoneNumber)
 
+    # example of usage
+    phoneNumber = "0123456789"
+    game.lauchInstance(phoneNumber)
     while True:
         if not len(game.instances[phoneNumber].tree.children):
             return False
@@ -289,5 +307,6 @@ def main(
         sendTwillioOutput(phoneNumber, game.generateOutput(phoneNumber))
     return 0
 
+# main entry
 if __name__ == "__main__":
     sys.exit(main())

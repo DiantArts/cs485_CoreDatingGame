@@ -6,19 +6,7 @@
             yeah no lmao \<name> you looser
         I have no idea how to build a story, HELP
     no
-        Text2
-        Answer2.1
-            Text2.1
-            Text2.1
-            Answer2.1.1
-            Answer2.1.2
-            Answer2.1.3
-        Answer2.2
-        Answer2.3
-            Text2.3
-            Answer2.3.1
-            Answer2.3.2
-            Answer2.3.3
+        \<load:Example02.txt>
     shut up
         Text3
         Answer3.1
